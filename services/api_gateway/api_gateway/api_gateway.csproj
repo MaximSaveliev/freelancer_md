@@ -20,9 +20,4 @@
       <ProjectReference Include="..\PL\PL.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Include="..\private.pem" CopyToOutputDirectory="PreserveNewest" Link="private.pem" />
-      <None Include="..\public.pem" CopyToOutputDirectory="PreserveNewest" Link="public.pem" />
-    </ItemGroup>
-
 </Project>

@@ -1,5 +1,102 @@
-# Existing ignores
-
 # Local environment secrets
 .env
+.env.*
+!.env.example
 
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rch/
+arm/
+arm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio / MSBuild
+.vs/
+TestResults/
+*.VC.db
+*.VC.VC.opendb
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+# The packages folder can be ignored because of PackageReference usage
+# but keep it if you use packages.config
+#packages/
+
+# dotnet tools
+.dotnet/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Misc
+*.swp
+*~
+
+# OS generated
+[Dd]esktop.ini
+Thumbs.db
+Thumbs.db:encryptable
+$RECYCLE.BIN/
+.DS_Store
+
+# Logs
+*.log
+
+# Publish output
+publish/
+
+# Coverage / test
+coverage/
+coverage.cobertura.xml
+*.coverage
+*.coveragexml
+
+# Secrets
+secrets.json
+
+# EF Core
+**/Migrations/*.log
+
+# Node (if any frontend tooling exists)
+node_modules/
+
+# Docker
+**/.dockerignore
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings
+
+# Backup & report files
+*.bak
+*.tmp
+*.temp
+*.orig
+*.rej
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
