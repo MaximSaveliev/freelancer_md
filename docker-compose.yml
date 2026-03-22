@@ -1,6 +1,6 @@
 services:
 
-  # ─── Infrastructure ───────────────────────────────────────────────────────────
+  # ─── Infrastructure ────────────────────────────────────────────────────────
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -20,59 +20,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── Backend Services ──────────────────────────────────────────────────────────
-
-  api_gateway:
-    build: ./services/api_gateway
-    container_name: freelancer_api_gateway
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    env_file: ./services/api_gateway/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    volumes:
-      - ./services/api_gateway:/app
-
-  auth:
-    build: ./services/auth
-    container_name: freelancer_auth
-    restart: unless-stopped
-    ports:
-      - "8001:8001"
-    env_file: ./services/auth/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    volumes:
-      - ./services/auth:/app
-
-  messenger:
-    build: ./services/messenger
-    container_name: freelancer_messenger
-    restart: unless-stopped
-    ports:
-      - "8002:8002"
-    env_file: ./services/messenger/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    volumes:
-      - ./services/messenger:/app
-
-  notification:
-    build: ./services/notification
-    container_name: freelancer_notification
-    restart: unless-stopped
-    ports:
-      - "8003:8003"
-    env_file: ./services/notification/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    volumes:
-      - ./services/notification:/app
+  # ─── Backend Services ──────────────────────────────────────────────────────
 
   payment:
     build: ./services/payment
@@ -87,7 +35,20 @@ services:
     volumes:
       - ./services/payment:/app
 
-  # ─── Frontend ─────────────────────────────────────────────────────────────────
+  notification:
+    build: ./services/notification
+    container_name: freelancer_notification
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    env_file: ./services/notification/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./services/notification:/app
+
+  # ─── Frontend ──────────────────────────────────────────────────────────────
 
   frontend:
     build: ./frontend
@@ -96,8 +57,6 @@ services:
     ports:
       - "3000:3000"
     env_file: ./frontend/.env
-    depends_on:
-      - api_gateway
     volumes:
       - ./frontend:/app
       - /app/node_modules
