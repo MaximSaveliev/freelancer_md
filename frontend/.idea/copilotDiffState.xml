@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/.env.example">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/.env.example" />
+              <option name="originalContent" value="# Copy to .env.local and adjust for your environment.&#10;&#10;# Backend API host (must include protocol, no trailing slash is preferred)&#10;NEXT_PUBLIC_BACKEND_HOST=http://localhost:5272" />
+              <option name="updatedContent" value="# Copy to .env.local and adjust for your environment.&#10;&#10;# Backend API host (must include protocol, no trailing slash is preferred)&#10;NEXT_PUBLIC_BACKEND_HOST=http://localhost:5272" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/README.md">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/README.md" />
+              <option name="originalContent" value="&lt;div align=&quot;center&quot;&gt;&#10;&lt;img width=&quot;1200&quot; height=&quot;475&quot; alt=&quot;GHBanner&quot; src=&quot;https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6&quot; /&gt;&#10;&lt;/div&gt;&#10;&#10;# Run and deploy your AI Studio app&#10;&#10;This contains everything you need to run your app locally.&#10;&#10;View your app in AI Studio: https://ai.studio/apps/f79ff592-8cb2-481a-b7e5-1fc7888c3a0d&#10;&#10;## Run Locally&#10;&#10;**Prerequisites:**  Node.js&#10;&#10;&#10;1. Install dependencies:&#10;   `npm install`&#10;2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key&#10;3. Run the app:&#10;   `npm run dev`&#10;" />
+              <option name="updatedContent" value="&lt;div align=&quot;center&quot;&gt;&#10;&lt;img width=&quot;1200&quot; height=&quot;475&quot; alt=&quot;GHBanner&quot; src=&quot;https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6&quot; /&gt;&#10;&lt;/div&gt;&#10;&#10;# Run and deploy your AI Studio app&#10;&#10;This contains everything you need to run your app locally.&#10;&#10;View your app in AI Studio: https://ai.studio/apps/f79ff592-8cb2-481a-b7e5-1fc7888c3a0d&#10;&#10;## Run Locally&#10;&#10;**Prerequisites:**  Node.js&#10;&#10;&#10;1. Install dependencies:&#10;   `npm install`&#10;2. Set environment variables in [.env.local](.env.local):&#10;   - `GEMINI_API_KEY` (Gemini API key)&#10;   - `NEXT_PUBLIC_BACKEND_HOST` (backend API host, e.g. `https://localhost:44374`)&#10;&#10;   You can start from [.env.example](.env.example).&#10;3. Run the app:&#10;   `npm run dev`" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

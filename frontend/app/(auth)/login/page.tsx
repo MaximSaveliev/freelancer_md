@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Handshake, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { login } from '@/lib/auth';
 
 type Role = 'client' | 'freelancer';
 
@@ -18,26 +19,34 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!formData.email || !formData.password) {
       setError('Пожалуйста, заполните все поля');
       return;
     }
 
     setIsLoading(true);
-    
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userRole', role);
-      // Redirect based on role
+
+    try {
+      const res = await login({ email: formData.email, password: formData.password });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+
+      // Tokens are set by the backend in cookies. We don't store them client-side.
+      // Redirect based on role (until we have a /me endpoint)
+
       if (role === 'freelancer') {
         router.push('/profile');
       } else {
         router.push('/client-profile');
       }
-    }, 1500);
+    } catch {
+      setError('Не удалось подключиться к серверу');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

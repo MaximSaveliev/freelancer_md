@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Handshake, Eye, EyeOff, Upload, ChevronDown, ArrowLeft, CheckCircle2, X, Monitor, Star, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { confirmEmail, register, resendEmailConfirmation } from '@/lib/auth';
 
 // Custom Dropdown Component
 function Dropdown({ value, onChange, options, placeholder, label }: any) {
@@ -63,7 +64,13 @@ export default function FreelancerRegistration() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     username: '',
@@ -86,7 +93,6 @@ export default function FreelancerRegistration() {
   useEffect(() => {
     const savedStep = localStorage.getItem('freelancer_registration_step');
     if (savedStep && parseInt(savedStep) > 1) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(parseInt(savedStep));
     }
   }, []);
@@ -104,9 +110,10 @@ export default function FreelancerRegistration() {
   const isPasswordMatch = isPasswordValid && formData.password === formData.confirmPassword;
   const isPasswordError = formData.confirmPassword.length > 0 && !isPasswordMatch;
 
+  // Username is ignored for backend registration for now.
   const isUsernameValid = formData.username.length >= 3;
-  
-  const isStep1Valid = isUsernameValid && isEmailMatch && isPasswordMatch;
+
+  const isStep1Valid = isEmailMatch && isPasswordMatch;
   const isStep3Valid = formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
   const isStep4Valid = formData.specialization !== '' && formData.experienceLevel !== '';
 
@@ -123,18 +130,74 @@ export default function FreelancerRegistration() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const clearOtp = () => {
+    setOtp(['', '', '', '', '', '']);
+    setTimeout(() => otpRefs.current[0]?.focus(), 0);
+  };
+
+  const submitRegistration = async () => {
+    setServerError(null);
+    setInfoMessage(null);
+
+    if (!isStep1Valid) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await register({ email: formData.email, password: formData.password });
+      if (!res.ok) {
+        setServerError(res.error);
+        return;
+      }
+
+      const resendRes = await resendEmailConfirmation({ email: formData.email });
+      if (!resendRes.ok) {
+        setInfoMessage('Аккаунт создан. Но код подтверждения не удалось отправить автоматически. Нажмите “Отправить код повторно”.');
+      } else {
+        setInfoMessage('Код подтверждения отправлен на email.');
+      }
+
+      clearOtp();
+      setTimer(60);
+      setStep(2);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const tryConfirmOtp = async (explicitOtp?: string) => {
+    const code = explicitOtp ?? otp.join('');
+    if (!/^\d{6}$/.test(code)) return;
+
+    setServerError(null);
+    setInfoMessage(null);
+    setIsConfirming(true);
+    try {
+      const res = await confirmEmail({ email: formData.email, token: code });
+      if (!res.ok) {
+        setServerError(res.error);
+        return;
+      }
+
+      setInfoMessage(res.data.message || 'Email confirmed');
+      setStep(3);
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    
+
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
-    
-    if (newOtp.every(v => v !== '')) {
-      setTimeout(() => setStep(3), 500);
+
+    const joined = newOtp.join('');
+    if (joined.length === 6 && /^\d{6}$/.test(joined)) {
+      void tryConfirmOtp(joined);
     }
   };
 
@@ -147,45 +210,50 @@ export default function FreelancerRegistration() {
   const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    
+
     if (pastedData) {
       const newOtp = [...otp];
       for (let i = 0; i < pastedData.length; i++) {
         newOtp[i] = pastedData[i];
       }
       setOtp(newOtp);
-      
+
       const nextIndex = Math.min(pastedData.length, 5);
       otpRefs.current[nextIndex]?.focus();
 
       if (pastedData.length === 6) {
-        setTimeout(() => setStep(3), 500);
+        void tryConfirmOtp(pastedData);
       }
     }
   };
 
-  const handleComplete = () => {
-    const payload = {
-      role: 'freelancer',
-      credentials: {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-      },
-      profile: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        specialization: formData.specialization,
-        experienceLevel: formData.experienceLevel,
+  const resendCode = async () => {
+    if (!isEmailValid) return;
+
+    setServerError(null);
+    setInfoMessage(null);
+    setIsResending(true);
+    try {
+      const res = await resendEmailConfirmation({ email: formData.email });
+      if (!res.ok) {
+        setServerError(res.error);
+        return;
       }
-    };
-    
-    console.log('Freelancer Registration Payload:', JSON.stringify(payload, null, 2));
+      setInfoMessage(res.data.message);
+      clearOtp();
+      setTimer(60);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  /**
+   * Final profile submission isn't wired yet.
+   * Keep as a placeholder so the UI can proceed without crashing.
+   */
+  const handleComplete = () => {
     localStorage.removeItem('freelancer_registration_step');
-    
-    setTimeout(() => {
-      router.push('/');
-    }, 1000);
+    router.push('/');
   };
 
   const getInputClass = (isMatch: boolean, isError: boolean) => {
@@ -298,6 +366,16 @@ export default function FreelancerRegistration() {
               </div>
             </div>
 
+            {(serverError || infoMessage) && (
+              <div
+                className={`mb-6 rounded-xl border px-4 py-3 text-sm ${
+                  serverError ? 'border-red-500/40 bg-red-500/10 text-red-200' : 'border-blue-500/30 bg-blue-500/10 text-slate-200'
+                }`}
+              >
+                {serverError ?? infoMessage}
+              </div>
+            )}
+
             <AnimatePresence mode="wait">
               {/* STEP 1: CREDENTIALS */}
               {step === 1 && (
@@ -329,6 +407,7 @@ export default function FreelancerRegistration() {
                         />
                         {isUsernameValid && <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 w-5 h-5" />}
                       </div>
+                      <p className="text-xs text-slate-500 mt-1.5">Пока не используется для регистрации (только email + пароль).</p>
                     </div>
 
                     <div>
@@ -405,15 +484,15 @@ export default function FreelancerRegistration() {
                   </div>
 
                   <button
-                    onClick={() => setStep(2)}
-                    disabled={!isStep1Valid}
+                    onClick={() => void submitRegistration()}
+                    disabled={!isStep1Valid || isSubmitting}
                     className={`w-full py-3.5 rounded-xl font-bold text-base mt-6 transition-all duration-300 ${
-                      isStep1Valid
+                      isStep1Valid && !isSubmitting
                         ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20 active:scale-[0.98]'
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                     }`}
                   >
-                    Продолжить
+                    {isSubmitting ? 'Отправляем…' : 'Продолжить'}
                   </button>
                   
                   <div className="text-center mt-6">
@@ -454,25 +533,39 @@ export default function FreelancerRegistration() {
                         autoComplete="one-time-code"
                         maxLength={1}
                         value={digit}
+                        disabled={isConfirming}
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={handleOtpPaste}
-                        className="w-12 h-14 sm:w-14 sm:h-16 bg-slate-800/50 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.15)] focus:outline-none transition-all"
+                        className="w-12 h-14 sm:w-14 sm:h-16 bg-slate-800/50 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white focus:border-blue-500 focus:shadow-[0_0_15px_rgba(59,130,246,0.15)] focus:outline-none transition-all disabled:opacity-60"
                       />
                     ))}
                   </div>
 
-                  <div className="pt-4">
+                  <button
+                    onClick={() => void tryConfirmOtp()}
+                    disabled={isConfirming || !/^\d{6}$/.test(otp.join(''))}
+                    className={`w-full py-3 rounded-xl font-bold text-base transition-all duration-300 ${
+                      !isConfirming && /^\d{6}$/.test(otp.join(''))
+                        ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20 active:scale-[0.98]'
+                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isConfirming ? 'Проверяем…' : 'Подтвердить код'}
+                  </button>
+
+                  <div className="pt-2">
                     {timer > 0 ? (
                       <p className="text-sm text-slate-500">
                         Отправить код повторно через <span className="text-blue-400 font-mono">{timer}с</span>
                       </p>
                     ) : (
-                      <button 
-                        onClick={() => setTimer(60)}
-                        className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                      <button
+                        onClick={() => void resendCode()}
+                        disabled={isResending}
+                        className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-60"
                       >
-                        Отправить код повторно
+                        {isResending ? 'Отправляем…' : 'Отправить код повторно'}
                       </button>
                     )}
                   </div>
