@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Handshake, Menu, Globe, ChevronDown, User, LogOut, Crown, Zap } from 'lucide-react';
+import { Handshake, Menu, Globe, ChevronDown, User, LogOut, Crown, Zap, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -10,6 +10,7 @@ import Image from 'next/image';
 export function Navbar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('RU');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -286,12 +287,91 @@ export function Navbar() {
                 )}
               </AnimatePresence>
             </div>
-            <button className="text-slate-300 hover:text-white cursor-pointer p-2">
-              <Menu className="w-6 h-6" />
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-slate-300 hover:text-white cursor-pointer p-2"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-slate-border bg-background-dark/95 backdrop-blur-xl overflow-hidden"
+          >
+            <div className="px-4 pt-2 pb-6 space-y-4">
+              {isLoggedIn ? (
+                <>
+                  {isClient ? (
+                    <Link href="/freelancers" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Найти фрилансеров</Link>
+                  ) : (
+                    <Link href="/projects" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Найти проекты</Link>
+                  )}
+                  <Link href="/orders" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Мои заказы</Link>
+                  
+                  <div className="pt-4 border-t border-slate-border">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Image 
+                        src={avatarSrc} 
+                        alt="Avatar" 
+                        width={40} 
+                        height={40} 
+                        className="rounded-full border border-slate-border object-cover bg-slate-card"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-white leading-tight">{userName}</span>
+                          {userRole === 'freelancer' && userPlan === 'premium' && <Crown className="w-3.5 h-3.5 text-amber-400" />}
+                          {userRole === 'freelancer' && userPlan === 'pro' && <Zap className="w-3.5 h-3.5 text-primary" />}
+                        </div>
+                        <p className="text-xs text-slate-400">{userTitle}</p>
+                      </div>
+                    </div>
+                    <Link href={profileLink} className="flex items-center gap-3 py-2 text-sm text-slate-300 hover:text-white transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="w-4 h-4" />
+                      Личный профиль
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 py-2 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Выход
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link href="/" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Как это работает</Link>
+                  <Link href="/projects" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Найти проекты</Link>
+                  <Link href="/freelancers" className="block py-2 text-base font-medium text-slate-300 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>Найти исполнителей</Link>
+                  
+                  <div className="pt-4 border-t border-slate-border flex flex-col gap-3">
+                    <Link href="/login" className="flex items-center justify-center w-full py-2.5 text-sm font-bold text-white hover:text-primary border border-slate-600 hover:border-primary rounded-xl transition-colors cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                      Войти
+                    </Link>
+                    <Link href="/register" className="flex items-center justify-center w-full py-2.5 text-sm font-bold text-background-dark bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-[0_0_15px_rgba(19,200,236,0.3)] cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                      Регистрация
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
