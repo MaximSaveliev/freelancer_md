@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using BLL.DTOs.User;
 using BLL.Exceptions;
 using BLL.Interfaces;
-using BLL.Settings;
 using DAL.Entities;
 using DAL.Interfaces;
 
@@ -15,21 +14,18 @@ public class AuthService : IAuthContracts
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IEmailSender _emailSender;
-    private readonly HostSettings _hostSettings;
     
     public AuthService(
         IUserRepository userRepository,
         ITokenService tokenService,
         IRefreshTokenRepository refreshTokenRepository,
-        IEmailSender emailSender,
-        HostSettings hostSettings
+        IEmailSender emailSender
         )
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _tokenService = tokenService;
         _emailSender = emailSender;
-        _hostSettings = hostSettings;
     }
 
     public async Task<TokensDTO> Login(LoginUserDTO loginUserDto)
@@ -94,12 +90,8 @@ public class AuthService : IAuthContracts
         {
             var createdUser = await _userRepository.Create(newUser);
 
-            // Create confirmation token
-            var tokenBytes = RandomNumberGenerator.GetBytes(32);
-            var token = Convert.ToBase64String(tokenBytes)
-                .Replace("+", "-")
-                .Replace("/", "_")
-                .TrimEnd('=');
+            // Create confirmation code (6 digits)
+            var token = Random.Shared.Next(0, 1_000_000).ToString("D6");
 
             createdUser.EmailConfirmationToken = token;
             createdUser.EmailConfirmationTokenExpiresAt = DateTime.UtcNow.AddHours(24);
@@ -108,17 +100,10 @@ public class AuthService : IAuthContracts
             await _userRepository.Update(createdUser);
 
             // Send email (console sink by default)
-            var baseUrl = _hostSettings.HostUrl.Trim().TrimEnd('/');
-            if (string.IsNullOrWhiteSpace(baseUrl))
-                baseUrl = "http://localhost";
-
-            var confirmLink =
-                $"{baseUrl}/v1/api/auth/confirm-email?email={Uri.EscapeDataString(createdUser.Email)}&token={Uri.EscapeDataString(token)}";
-
             await _emailSender.SendEmailAsync(
                 createdUser.Email,
                 "Confirm your email",
-                $"<p>Please confirm your email by visiting:</p><p><a href=\"{confirmLink}\">{confirmLink}</a></p>"
+                $"<p>Your confirmation code is:</p><h2 style=\"letter-spacing:2px\">{token}</h2><p>This code expires in 24 hours.</p>"
             );
 
             return new UserViewDTO

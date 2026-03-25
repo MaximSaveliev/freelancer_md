@@ -1,6 +1,5 @@
 using BLL.Exceptions;
 using BLL.Interfaces;
-using BLL.Settings;
 using DAL.Interfaces;
 
 namespace BLL.Services;
@@ -9,13 +8,11 @@ public sealed class EmailConfirmationService
 {
     private readonly IUserRepository _userRepository;
     private readonly IEmailSender _emailSender;
-    private readonly HostSettings _hostSettings;
 
-    public EmailConfirmationService(IUserRepository userRepository, IEmailSender emailSender, HostSettings hostSettings)
+    public EmailConfirmationService(IUserRepository userRepository, IEmailSender emailSender)
     {
         _userRepository = userRepository;
         _emailSender = emailSender;
-        _hostSettings = hostSettings;
     }
 
     public async Task ConfirmEmail(string email, string token)
@@ -52,32 +49,22 @@ public sealed class EmailConfirmationService
         if (user.EmailConfirmed)
             return;
 
-        // If token missing or expired, generate a new token using same logic in AuthService.
+        // If code missing or expired, generate a new 6-digit numeric confirmation code.
         var token = user.EmailConfirmationToken;
         if (string.IsNullOrWhiteSpace(token) || user.EmailConfirmationTokenExpiresAt is null || user.EmailConfirmationTokenExpiresAt <= DateTime.UtcNow)
         {
-            var tokenBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
-            token = Convert.ToBase64String(tokenBytes)
-                .Replace("+", "-")
-                .Replace("/", "_")
-                .TrimEnd('=');
+            // 6-digit code, padded with leading zeros (e.g., "004271").
+            token = Random.Shared.Next(0, 1_000_000).ToString("D6");
 
             user.EmailConfirmationToken = token;
             user.EmailConfirmationTokenExpiresAt = DateTime.UtcNow.AddHours(24);
             await _userRepository.Update(user);
         }
 
-        var baseUrl = _hostSettings.HostUrl.Trim().TrimEnd('/');
-        if (string.IsNullOrWhiteSpace(baseUrl))
-            baseUrl = "http://localhost"; // safe fallback for dev
-
-        var confirmLink =
-            $"{baseUrl}/v1/api/auth/confirm-email?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
-
         await _emailSender.SendEmailAsync(
             user.Email,
             "Confirm your email",
-            $"<p>Please confirm your email by visiting:</p><p><a href=\"{confirmLink}\">{confirmLink}</a></p>"
+            $"<p>Your confirmation code is:</p><h2 style=\"letter-spacing:2px\">{token}</h2><p>This code expires in 24 hours.</p>"
         );
     }
 }

@@ -16,7 +16,10 @@ public class AuthController : ControllerBase
     private readonly JwtSettings _jwtSettings;
     private readonly EmailConfirmationService _emailConfirmationService;
     
-    public AuthController(IAuthContracts authContracts, JwtSettings jwtSettings, EmailConfirmationService emailConfirmationService)
+    public AuthController(
+        IAuthContracts authContracts,
+        JwtSettings jwtSettings,
+        EmailConfirmationService emailConfirmationService)
     {
         _authContracts = authContracts;
         _jwtSettings = jwtSettings;
@@ -122,12 +125,12 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto dto)
     {
         try
         {
-            await _emailConfirmationService.ConfirmEmail(email, token);
+            await _emailConfirmationService.ConfirmEmail(dto.Email, dto.Token);
             return Ok(new { message = "Email confirmed" });
         }
         catch (InvalidEmailConfirmationException ex)

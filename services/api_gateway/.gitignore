@@ -1,102 +1,86 @@
-# Local environment secrets
-.env
-.env.*
-!.env.example
+# .NET / Visual Studio / Rider
+# ------------------------------------------------------------
 
+# Build results
+**/bin/
+**/obj/
+**/[Dd]ebug/
+**/[Rr]elease/
+**/[Xx]64/
+**/[Xx]86/
+**/[Aa][Rr][Mm]/
+**/[Aa][Rr][Mm]64/
+
+# Test results
+**/[Tt]est[Rr]esults/
+
+# Publish / artifacts
+**/publish/
+artifacts/
+
+# ASP.NET Core / EF / general logs
+*.log
+
+# Visual Studio
+.vs/
 # User-specific files
-*.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-*.DotSettings.user
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Aa]rch/
-arm/
-arm64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-
-# Visual Studio / MSBuild
-.vs/
-TestResults/
+*.rsuser
+*.cache
+*.ilk
+*.pdb
+*.aps
+*.ncb
+*.opendb
 *.VC.db
 *.VC.VC.opendb
+
+# MSBuild / NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+# packages/ is used by legacy projects; modern SDK-style uses global-packages
+packages/
+# lock files may be committed if you use restore locking; ignore by default
+packages.lock.json
+project.lock.json
+
+# dotnet tools / local state
+.dotnet/
 
 # Rider / JetBrains
 .idea/
 *.sln.iml
-
-# NuGet
-*.nupkg
-*.snupkg
-# The packages folder can be ignored because of PackageReference usage
-# but keep it if you use packages.config
-#packages/
-
-# dotnet tools
-.dotnet/
-
-# ASP.NET Scaffolding
-ScaffoldingReadMe.txt
-
-# Misc
-*.swp
-*~
-
-# OS generated
-[Dd]esktop.ini
-Thumbs.db
-Thumbs.db:encryptable
-$RECYCLE.BIN/
-.DS_Store
-
-# Logs
-*.log
-
-# Publish output
-publish/
-
-# Coverage / test
-coverage/
-coverage.cobertura.xml
-*.coverage
-*.coveragexml
-
-# Secrets
-secrets.json
-
-# EF Core
-**/Migrations/*.log
-
-# Node (if any frontend tooling exists)
-node_modules/
-
-# Docker
-**/.dockerignore
+*.iws
+*.ipr
+*.DotSettings.user
 
 # ReSharper
 _ReSharper*/
 *.[Rr]e[Ss]harper
-*.DotSettings
 
-# Backup & report files
-*.bak
-*.tmp
-*.temp
-*.orig
-*.rej
+# OS junk
+[Dd]esktop.ini
+Thumbs.db
+Thumbs.db:encryptable
 
-# SQLite
-*.db
-*.db-shm
-*.db-wal
+# Local environment / secrets
+.env
+.env.*
+*.secrets.json
+
+# ASP.NET Core appsettings
+# Keep appsettings.json committed, but ignore local dev overrides.
+appsettings.Development.json
+
+# Node / frontend (you have TypeScript DTOs)
+node_modules/
+
+# Keep these tracked explicitly (defensive; nothing above should ignore them)
+!docs/
+!docs/**
+!dto/
+!dto/**

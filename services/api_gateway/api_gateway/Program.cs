@@ -46,6 +46,8 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<EmailConfirmationService>();
 
+// RabbitMQ
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

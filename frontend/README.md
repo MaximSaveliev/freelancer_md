@@ -18,7 +18,6 @@ View your app in AI Studio: https://ai.studio/apps/f79ff592-8cb2-481a-b7e5-1fc78
 2. Set environment variables in [.env.local](.env.local):
    - `GEMINI_API_KEY` (Gemini API key)
    - `NEXT_PUBLIC_BACKEND_HOST` (backend API host, e.g. `https://localhost:44374`)
+   - `NEXT_PUBLIC_MESSENGER_HOST` (messenger API host, e.g. `http://localhost:5273`)
 
    You can start from [.env.example](.env.example).
-3. Run the app:
-   `npm run dev`

@@ -5,6 +5,7 @@
  */
 
 const DEFAULT_BACKEND_HOST = 'https://localhost:44374';
+const DEFAULT_MESSENGER_HOST = 'http://localhost:5273';
 
 function normalizeOrigin(value: string): string {
   const trimmed = value.trim().replace(/\/+$/, ''); // remove trailing slash
@@ -39,3 +40,13 @@ export const BACKEND_HOST: string = (() => {
   return normalizeOrigin(raw);
 })();
 
+/**
+ * Messenger host (origin) used for messenger service APIs (SignalR + Conversation controller).
+ *
+ * In dev, defaults to http://localhost:5273.
+ */
+export const MESSENGER_HOST: string = (() => {
+  const raw = process.env.NEXT_PUBLIC_MESSENGER_HOST;
+  if (!raw) return DEFAULT_MESSENGER_HOST;
+  return normalizeOrigin(raw);
+})();

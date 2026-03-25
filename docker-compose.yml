@@ -1,57 +1,16 @@
 services:
-
-  # ─── Infrastructure ────────────────────────────────────────────────────────
-
   rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: freelancer_rabbitmq
-    restart: unless-stopped
+    image: rabbitmq:3.12-management  # stable RabbitMQ with management UI
+    container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ─── Backend Services ──────────────────────────────────────────────────────
-
-  payment:
-    build: ./services/payment
-    container_name: freelancer_payment
     restart: unless-stopped
-    ports:
-      - "8004:8004"
-    env_file: ./services/payment/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  notification:
-    build: ./services/notification
-    container_name: freelancer_notification
-    restart: unless-stopped
-    ports:
-      - "8003:8003"
-    env_file: ./services/notification/.env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  # ─── Frontend ──────────────────────────────────────────────────────────────
-
-  frontend:
-    build: ./frontend
-    container_name: freelancer_frontend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
 
 volumes:
   rabbitmq_data:
