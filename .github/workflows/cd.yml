@@ -21,4 +21,8 @@ jobs:
             cd ~/freelancer_md
             git pull origin master
             docker compose up --build -d
+            sleep 15
             docker compose ps
+            docker compose ps | grep -E "unhealthy|Exit" && echo "ERROR: some containers are unhealthy" && exit 1 || echo "All containers healthy"
+            sudo cp ~/freelancer_md/nginx/freelancermd.conf /etc/nginx/sites-available/freelancermd.com
+            sudo nginx -t && sudo systemctl reload nginx
