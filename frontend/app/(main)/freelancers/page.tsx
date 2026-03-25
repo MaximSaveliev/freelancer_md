@@ -143,7 +143,7 @@ export default function FreelancersPage() {
   const freelancersPerPage = 5;
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setCurrentPage(1);
   }, [searchQuery, isAvailableNow, selectedCategories, selectedLevels, minRating, rateMin, rateMax, selectedLocation, sortBy]);
 

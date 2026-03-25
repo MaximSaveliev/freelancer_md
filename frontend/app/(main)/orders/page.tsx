@@ -30,7 +30,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<Tab>('active');
   const [now, setNow] = useState(new Date());
   const [allBids, setAllBids] = useState<BidWithProject[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!(typeof window !== 'undefined' && localStorage.getItem('user_id')));
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
@@ -39,7 +39,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
-    if (!userId) { setLoading(false); return; }
+    if (!userId) return;
 
     listUserBids(userId)
       .then(async (bids) => {

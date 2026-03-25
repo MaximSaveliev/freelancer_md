@@ -12,7 +12,7 @@ export function DashboardNavbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('userRole') || 'freelancer' : null));
   const [userName, setUserName] = useState('');
   const [avatarSrc, setAvatarSrc] = useState('');
   const profileRef = useRef<HTMLDivElement>(null);
@@ -27,9 +27,6 @@ export function DashboardNavbar() {
   ]);
 
   useEffect(() => {
-    const role = localStorage.getItem('userRole') || 'freelancer';
-    setUserRole(role);
-
     const userId = localStorage.getItem('user_id');
     if (userId) {
       getProfile(userId)

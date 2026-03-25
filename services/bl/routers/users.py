@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from database import get_supabase
 from models.schemas import UserCreateRequest, UserResponse
@@ -26,6 +26,15 @@ async def create_user(body: UserCreateRequest):
     payload["password_hash"] = ""
     row = db.table("users").insert(payload).execute().data
     return row[0]
+
+
+@router.get("/by-email", response_model=UserResponse)
+async def get_user_by_email(email: str = Query(..., description="User email address")):
+    db = get_supabase()
+    rows = db.table("users").select("*").eq("email", email).limit(1).execute().data
+    if not rows:
+        raise HTTPException(status_code=404, detail="User not found")
+    return rows[0]
 
 
 @router.get("/{user_id}", response_model=UserResponse)

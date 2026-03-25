@@ -13,6 +13,14 @@ from tests.helpers import (
 )
 
 
+def test_list_user_bids(client: TestClient):
+    db = make_db([MOCK_BID_ROW])
+    with patch("routers.bids.get_supabase", return_value=db):
+        resp = client.get(f"/bids?user_id={FREELANCER_ID}")
+    assert resp.status_code == 200
+    assert resp.json()[0]["user_id"] == FREELANCER_ID
+
+
 def test_list_bids(client: TestClient):
     db = make_db([MOCK_BID_ROW])
     with patch("routers.bids.get_supabase", return_value=db):

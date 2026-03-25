@@ -13,9 +13,12 @@ export function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('RU');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userPlan, setUserPlan] = useState<'free' | 'pro' | 'premium'>('free');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('isLoggedIn') === 'true' : false));
+  const [userRole] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('userRole') || 'freelancer' : null));
+  const [userPlan] = useState<'free' | 'pro' | 'premium'>(() => {
+    if (typeof window === 'undefined') return 'free';
+    return (localStorage.getItem('userPlan') as 'free' | 'pro' | 'premium') || 'free';
+  });
   const [userName, setUserName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const langRef = useRef<HTMLDivElement>(null);
@@ -30,12 +33,7 @@ export function Navbar() {
   ];
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loggedIn);
-    setUserRole(localStorage.getItem('userRole') || 'freelancer');
-    setUserPlan((localStorage.getItem('userPlan') as 'free' | 'pro' | 'premium') || 'free');
-
-    if (loggedIn) {
+    if (isLoggedIn) {
       const userId = localStorage.getItem('user_id');
       if (userId) {
         getProfile(userId)
@@ -46,7 +44,7 @@ export function Navbar() {
           .catch(() => {});
       }
     }
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

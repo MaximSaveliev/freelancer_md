@@ -91,7 +91,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (activeChatId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setChats(prev => prev.map(chat => chat.id === activeChatId ? { ...chat, unreadCount: 0 } : chat));
     }
   }, [activeChatId]);

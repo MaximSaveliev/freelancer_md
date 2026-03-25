@@ -150,6 +150,7 @@ class ProfileSkillAddRequest(BaseModel):
 class ProfileSkillResponse(BaseModel):
     user_id: str
     skill_id: str
+    skill_name: Optional[str] = None
     proficiency: Optional[ProficiencyLevel] = None
     created_at: datetime
     updated_at: datetime

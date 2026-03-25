@@ -48,9 +48,9 @@ export default function ClientProfilePage() {
   const [isEditingHeader, setIsEditingHeader] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [userId] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('user_id') : null));
+  const [loading, setLoading] = useState(() => !!(typeof window !== 'undefined' && localStorage.getItem('user_id')));
   const [saving, setSaving] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -66,13 +66,11 @@ export default function ClientProfilePage() {
   });
 
   useEffect(() => {
-    const uid = localStorage.getItem('user_id');
-    setUserId(uid);
-    if (!uid) { setLoading(false); return; }
+    if (!userId) return;
 
     Promise.all([
-      getProfile(uid),
-      listProjects({ user_id: uid }),
+      getProfile(userId),
+      listProjects({ user_id: userId }),
     ])
       .then(([prof, projs]) => {
         setProfile(prof);
@@ -90,7 +88,7 @@ export default function ClientProfilePage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   const saveHeader = async () => {
     if (!userId) return;

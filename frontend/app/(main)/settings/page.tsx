@@ -39,7 +39,7 @@ export default function SettingsPage() {
     const role = localStorage.getItem('userRole') || 'freelancer';
     const email = localStorage.getItem('user_email') || '';
     const userId = localStorage.getItem('user_id') || '';
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setUserRole(role);
     if (email) setCurrentLogin(email);
 
