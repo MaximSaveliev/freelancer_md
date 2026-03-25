@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Handshake, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { login } from '@/lib/auth';
 
 type Role = 'client' | 'freelancer';
 

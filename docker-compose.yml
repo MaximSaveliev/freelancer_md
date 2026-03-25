@@ -1,17 +1,13 @@
 services:
-
-  # ─── Infrastructure ────────────────────────────────────────────────────────
-
   rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: freelancer_rabbitmq
-    restart: unless-stopped
+    image: rabbitmq:3.12-management  # stable RabbitMQ with management UI
+    container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

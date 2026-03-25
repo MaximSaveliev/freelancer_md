@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/.env.example">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/.env.example" />
+              <option name="originalContent" value="# Copy to .env.local and adjust for your environment.&#10;&#10;# Backend API host (must include protocol, no trailing slash is preferred)&#10;NEXT_PUBLIC_BACKEND_HOST=http://localhost:5272" />
+              <option name="updatedContent" value="# Copy to .env.local and adjust for your environment.&#10;&#10;# Backend API host (must include protocol, no trailing slash is preferred)&#10;NEXT_PUBLIC_BACKEND_HOST=http://localhost:5272" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/forgot-password/page.tsx">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/forgot-password/page.tsx" />
+              <option name="updatedContent" value="'use client';&#10;&#10;export default function ForgotPasswordPage() {&#10;  return (&#10;    &lt;div className=&quot;min-h-[calc(100vh-80px)] bg-background-dark py-12 px-4 sm:px-6 lg:px-8&quot;&gt;&#10;      &lt;div className=&quot;max-w-md mx-auto bg-slate-card border border-slate-border rounded-2xl p-8&quot;&gt;&#10;        &lt;h1 className=&quot;text-2xl font-bold text-white mb-2&quot;&gt;Forgot password&lt;/h1&gt;&#10;        &lt;p className=&quot;text-slate-400 text-sm&quot;&gt;This page is a placeholder.&lt;/p&gt;&#10;      &lt;/div&gt;&#10;    &lt;/div&gt;&#10;  );&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
