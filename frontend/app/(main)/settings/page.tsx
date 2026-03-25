@@ -7,7 +7,7 @@ import SubscriptionModal from '@/components/subscription-modal';
 
 export default function SettingsPage() {
   // State for Login Change
-  const [currentLogin, setCurrentLogin] = useState('iskander@example.com');
+  const [currentLogin, setCurrentLogin] = useState('');
   const [newLogin, setNewLogin] = useState('');
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState('');
@@ -28,28 +28,45 @@ export default function SettingsPage() {
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro' | 'premium'>('free');
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
 
-  // Skills State
-  const [skills, setSkills] = useState<string[]>(['REACT', 'TYPESCRIPT', 'TAILWIND']);
+  // Skills State — each entry has id (skill_id) + name for display
+  const [skills, setSkills] = useState<{ id: string; name: string }[]>([]);
   const [newSkill, setNewSkill] = useState('');
+  const [isSkillLoading, setIsSkillLoading] = useState(false);
   const maxSkills = currentPlan === 'free' ? 5 : 10;
 
-  // Load mock user data
+  // Load user data + skills + subscription
   useEffect(() => {
     const role = localStorage.getItem('userRole') || 'freelancer';
+    const email = localStorage.getItem('user_email') || '';
+    const userId = localStorage.getItem('user_id') || '';
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserRole(role);
-    
-    const plan = localStorage.getItem('userPlan') as 'free' | 'pro' | 'premium' | null;
-    if (plan) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentPlan(plan);
-    }
+    if (email) setCurrentLogin(email);
 
-    if (role === 'client') {
-      setCurrentLogin('ionescu@example.com');
-    } else {
-      setCurrentLogin('iskander@example.com');
-    }
+    const loadData = async () => {
+      if (!userId) return;
+      try {
+        const [{ getProfileSkills, listSkills }, { getSubscription }] = await Promise.all([
+          import('@/lib/api/bl'),
+          import('@/lib/api/payment'),
+        ]);
+        const [profileSkills, allSkills, sub] = await Promise.all([
+          getProfileSkills(userId),
+          listSkills(),
+          getSubscription(userId).catch(() => null),
+        ]);
+        const skillMap = new Map(allSkills.map(s => [s.id, s.name]));
+        setSkills(profileSkills.map(ps => ({ id: ps.skill_id, name: skillMap.get(ps.skill_id) ?? ps.skill_id })));
+        if (sub) {
+          const plan = sub.plan as 'free' | 'pro' | 'premium';
+          setCurrentPlan(plan);
+          localStorage.setItem('userPlan', plan);
+        }
+      } catch (e) {
+        console.error('Failed to load settings data:', e);
+      }
+    };
+    loadData();
   }, []);
 
   const handleLoginChange = async (e: React.FormEvent) => {
@@ -107,21 +124,51 @@ export default function SettingsPage() {
     }, 1000);
   };
 
-  const handleUpgrade = (plan: 'pro' | 'premium') => {
-    setCurrentPlan(plan);
-    localStorage.setItem('userPlan', plan);
-  };
-
-  const handleAddSkill = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newSkill.trim() && skills.length < maxSkills && !skills.includes(newSkill.trim().toUpperCase())) {
-      setSkills([...skills, newSkill.trim().toUpperCase()]);
-      setNewSkill('');
+  const handleUpgrade = async (plan: 'pro' | 'premium') => {
+    const userId = localStorage.getItem('user_id') || '';
+    const email = localStorage.getItem('user_email') || '';
+    const name = localStorage.getItem('user_name') || email;
+    if (!userId) return;
+    try {
+      const { createCheckout } = await import('@/lib/api/payment');
+      const { checkout_url } = await createCheckout({ user_id: userId, plan, email, name });
+      window.location.href = checkout_url;
+    } catch (e) {
+      console.error('Checkout failed:', e);
     }
   };
 
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newSkill.trim().toUpperCase();
+    if (!name || skills.length >= maxSkills || skills.some(s => s.name === name)) return;
+    const userId = localStorage.getItem('user_id') || '';
+    if (!userId) return;
+    setIsSkillLoading(true);
+    try {
+      const { listSkills, createSkill, addProfileSkill } = await import('@/lib/api/bl');
+      const found = await listSkills(name);
+      const skill = found.find(s => s.name.toUpperCase() === name) ?? await createSkill(name);
+      await addProfileSkill(userId, skill.id);
+      setSkills(prev => [...prev, { id: skill.id, name: skill.name.toUpperCase() }]);
+      setNewSkill('');
+    } catch (e) {
+      console.error('Failed to add skill:', e);
+    } finally {
+      setIsSkillLoading(false);
+    }
+  };
+
+  const handleRemoveSkill = async (skillId: string) => {
+    const userId = localStorage.getItem('user_id') || '';
+    if (!userId) return;
+    try {
+      const { removeProfileSkill } = await import('@/lib/api/bl');
+      await removeProfileSkill(userId, skillId);
+      setSkills(prev => prev.filter(s => s.id !== skillId));
+    } catch (e) {
+      console.error('Failed to remove skill:', e);
+    }
   };
 
   return (
@@ -404,24 +451,24 @@ export default function SettingsPage() {
                     disabled={skills.length >= maxSkills}
                     className="flex-1 bg-background-dark border border-slate-border rounded-xl px-4 py-2.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <button 
+                  <button
                     type="submit"
-                    disabled={!newSkill.trim() || skills.length >= maxSkills}
+                    disabled={!newSkill.trim() || skills.length >= maxSkills || isSkillLoading}
                     className="shrink-0 bg-slate-800 text-white px-6 py-2.5 rounded-xl hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium border border-slate-700"
                   >
-                    Добавить
+                    {isSkillLoading ? '...' : 'Добавить'}
                   </button>
                 </form>
 
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill) => (
-                    <span 
-                      key={skill} 
+                    <span
+                      key={skill.id}
                       className="px-3 py-1.5 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-300 font-medium flex items-center gap-2"
                     >
-                      {skill}
-                      <button 
-                        onClick={() => handleRemoveSkill(skill)}
+                      {skill.name}
+                      <button
+                        onClick={() => handleRemoveSkill(skill.id)}
                         className="text-slate-500 hover:text-red-400 transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />

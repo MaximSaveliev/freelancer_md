@@ -2,149 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  Search, CheckCircle2, Star, Bookmark, MapPin, ChevronDown, 
+import {
+  Search, CheckCircle2, Star, Bookmark, MapPin, ChevronDown,
   LayoutGrid, Award, Wallet, BadgeCheck, ToggleLeft, ToggleRight, Crown, Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Avatar } from '@/components/avatar';
+import type { Profile } from '@/lib/types';
 
-// Mock Data
-const MOCK_FREELANCERS = [
-  {
-    id: '1',
-    name: 'Александр В.',
-    isVerified: true,
-    role: 'Senior UI/UX Designer',
-    location: 'Кишинев',
-    isOnline: true,
-    skills: ['FIGMA', 'PROTOTYPING', 'WEB DESIGN'],
-    bio: 'Более 8 лет опыта в создании интерфейсов для финтех и e-commerce проектов. Специализируюсь на сложных дизайн-системах и высококонверсионных лендингах.',
-    rate: 35,
-    projectsCompleted: 128,
-    rating: 4.9,
-    reviews: 92,
-    categoryId: 'design',
-    level: 'senior',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/alex/100/100',
-    plan: 'premium'
-  },
-  {
-    id: '2',
-    name: 'Елена П.',
-    isVerified: true,
-    role: 'Full-stack Developer',
-    location: 'Бельцы',
+function mapProfile(p: Profile) {
+  return {
+    id: p.user_id,
+    name: `${p.first_name} ${p.last_name}`,
+    isVerified: p.is_verified,
+    role: p.position ?? p.grade ?? 'Фрилансер',
+    location: p.location ?? '',
     isOnline: false,
-    skills: ['REACT', 'NODE.JS', 'POSTGRESQL'],
-    bio: 'Разработка масштабируемых веб-приложений на современном стеке. Опыт работы с высоконагруженными системами и интеграцией API.',
-    rate: 45,
-    projectsCompleted: 84,
-    rating: 5.0,
-    reviews: 45,
-    categoryId: 'dev',
-    level: 'senior',
+    skills: [] as string[],
+    bio: p.bio ?? '',
+    rate: p.hourly_rate ?? 0,
+    projectsCompleted: p.completed_count,
+    rating: p.rating,
+    reviews: p.review_count,
+    categoryId: '',
+    level: (p.grade ?? 'JUNIOR').toLowerCase(),
     isSaved: false,
-    avatar: 'https://picsum.photos/seed/elena/100/100',
-    plan: 'pro'
-  },
-  {
-    id: '3',
-    name: 'Дмитрий С.',
-    isVerified: true,
-    role: 'Motion Designer & 3D',
-    location: 'Тирасполь',
-    isOnline: true,
-    skills: ['BLENDER', 'AFTER EFFECTS'],
-    bio: 'Создаю эффектные 3D анимации для брендов и мобильных приложений. Работаю над рекламными роликами и презентациями продуктов.',
-    rate: 30,
-    projectsCompleted: 46,
-    rating: 4.8,
-    reviews: 31,
-    categoryId: 'design',
-    level: 'middle',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/dmitry/100/100',
-    plan: 'free'
-  },
-  {
-    id: '4',
-    name: 'Марина К.',
-    isVerified: true,
-    role: 'Digital Marketing & SEO',
-    location: 'Кишинев',
-    isOnline: true,
-    skills: ['SEO', 'GOOGLE ADS'],
-    bio: 'Комплексное продвижение бизнеса в сети. Вывод сайтов в топ выдачи и настройка эффективных рекламных кампаний.',
-    rate: 25,
-    projectsCompleted: 212,
-    rating: 4.7,
-    reviews: 124,
-    categoryId: 'marketing',
-    level: 'senior',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/marina/100/100',
-    plan: 'pro'
-  },
-  {
-    id: '5',
-    name: 'Иван М.',
-    isVerified: true,
-    role: 'Python Developer',
-    location: 'Кишинев',
-    isOnline: false,
-    skills: ['DJANGO', 'FASTAPI'],
-    bio: 'Backend-разработчик с упором на производительность и чистый код. Создаю API, парсеры и автоматизирую бизнес-процессы.',
-    rate: 40,
-    projectsCompleted: 56,
-    rating: 4.9,
-    reviews: 18,
-    categoryId: 'dev',
-    level: 'middle',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/ivan/100/100',
-    plan: 'free'
-  },
-  {
-    id: '6',
-    name: 'Анна Л.',
-    isVerified: true,
-    role: 'Copywriter & Translator',
-    location: 'Кагул',
-    isOnline: false,
-    skills: ['ENGLISH', 'ROMANIAN', 'RUSSIAN'],
-    bio: 'Профессиональный переводчик и копирайтер. Помогаю брендам выходить на международный рынок, адаптируя контент под локальную аудиторию.',
-    rate: 20,
-    projectsCompleted: 314,
-    rating: 5.0,
-    reviews: 156,
-    categoryId: 'texts',
-    level: 'senior',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/anna/100/100',
-    plan: 'free'
-  },
-  {
-    id: '7',
-    name: 'Виктор К.',
-    isVerified: true,
-    role: 'Mobile Developer (Flutter)',
-    location: 'Кишинев',
-    isOnline: true,
-    skills: ['FLUTTER', 'DART', 'FIREBASE'],
-    bio: 'Разработка кроссплатформенных мобильных приложений. Помогаю стартапам быстро запустить MVP на iOS и Android.',
-    rate: 50,
-    projectsCompleted: 22,
-    rating: 4.9,
-    reviews: 14,
-    categoryId: 'dev',
-    level: 'senior',
-    isSaved: false,
-    avatar: 'https://picsum.photos/seed/viktor/100/100',
-    plan: 'free'
-  }
-];
+    avatar: p.avatar_url ?? null,
+    plan: 'free' as 'free' | 'pro' | 'premium',
+  };
+}
 
 const CATEGORIES = [
   { id: 'dev', label: 'Разработка и IT' },
@@ -161,6 +47,21 @@ const LEVELS = [
 ];
 
 export default function FreelancersPage() {
+  const [freelancers, setFreelancers] = useState<ReturnType<typeof mapProfile>[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { listProfiles } = await import('@/lib/api/bl');
+        const profiles = await listProfiles({ role: 'FREELANCER', limit: 50 });
+        setFreelancers(profiles.map(mapProfile));
+      } catch (e) {
+        console.error('Failed to load freelancers:', e);
+      }
+    };
+    load();
+  }, []);
+
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [isAvailableNow, setIsAvailableNow] = useState(false);
@@ -171,10 +72,8 @@ export default function FreelancersPage() {
   const [rateMax, setRateMax] = useState<string>('');
   const [selectedLocation, setSelectedLocation] = useState<string>('Все города Молдовы');
   const [sortBy, setSortBy] = useState('По рейтингу');
-  
-  const [savedFreelancers, setSavedFreelancers] = useState<string[]>(
-    MOCK_FREELANCERS.filter(f => f.isSaved).map(f => f.id)
-  );
+
+  const [savedFreelancers, setSavedFreelancers] = useState<string[]>([]);
 
   const toggleSaved = (id: string) => {
     setSavedFreelancers(prev => 
@@ -195,7 +94,7 @@ export default function FreelancersPage() {
   };
 
   // Filtering Logic
-  const filteredFreelancers = MOCK_FREELANCERS.filter(freelancer => {
+  const filteredFreelancers = freelancers.filter(freelancer => {
     // Search
     if (searchQuery && !freelancer.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase())) && !freelancer.name.toLowerCase().includes(searchQuery.toLowerCase()) && !freelancer.role.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -516,19 +415,17 @@ export default function FreelancersPage() {
                     <div className="flex items-start gap-5 mb-5">
                       <div className="relative shrink-0">
                         <div className={`rounded-full p-0.5 ${
-                          freelancer.plan === 'premium' 
-                            ? 'bg-gradient-to-br from-amber-400 to-amber-600' 
+                          freelancer.plan === 'premium'
+                            ? 'bg-gradient-to-br from-amber-400 to-amber-600'
                             : freelancer.plan === 'pro'
                             ? 'bg-gradient-to-br from-primary to-purple-600'
                             : 'bg-transparent'
                         }`}>
-                          <Image 
-                            src={freelancer.avatar} 
-                            alt={freelancer.name} 
-                            width={72} 
-                            height={72} 
-                            className="rounded-full object-cover border-2 border-slate-card"
-                            referrerPolicy="no-referrer"
+                          <Avatar
+                            src={freelancer.avatar}
+                            name={freelancer.name}
+                            size={72}
+                            className="border-2 border-slate-card"
                           />
                         </div>
                         {freelancer.isOnline && (

@@ -9,210 +9,48 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock Data
-const MOCK_PROJECTS = [
-  {
-    id: '1',
-    title: 'Разработка Landing page + ребрендинг компании',
-    postedAt: 'Опубликовано 2 часа назад',
-    applicants: 12,
-    paymentVerified: true,
-    description: 'Требуется опытный веб-дизайнер и разработчик для создания современного лендинга под ключ. Также необходимо освежить логотип и фирменный стиль. Ожидаем портфолио с релевантными...',
-    tags: ['Web Design', 'Figma', 'Webflow', 'Branding'],
-    budget: '$400 - $800',
-    budgetMin: 400,
-    budgetMax: 800,
-    rating: 4.8,
-    reviews: 12,
-    isSaved: false,
-    isPromoted: true,
-    categoryId: 'design',
-    paymentType: 'fixed',
-    deadline: 'short',
-    experienceLevel: 'middle',
-    isEscrowReady: true,
-    isNew: true,
-  },
-  {
-    id: '2',
-    title: 'Монтаж динамичного видео для Reels/Shorts',
-    postedAt: '5 часов назад',
-    applicants: 6,
+import type { Project as BLProject, Category as BLCategory } from '@/lib/types';
+
+function mapBLProject(p: BLProject) {
+  const budgetMin = p.budget.amount ?? p.budget.min ?? 0;
+  const budgetMax = p.budget.amount ?? p.budget.max ?? budgetMin;
+  const paymentType = p.payment_type.toLowerCase();
+  const deadline = p.is_urgent ? 'urgent' : 'long';
+  const experienceLevel = p.required_grade?.toLowerCase() ?? '';
+  const createdAt = new Date(p.created_at);
+  const isNew = Date.now() - createdAt.getTime() < 24 * 60 * 60 * 1000;
+  const budgetStr = paymentType === 'auction'
+    ? 'Аукцион'
+    : paymentType === 'hourly'
+    ? `$${budgetMin} / час`
+    : budgetMin === budgetMax
+    ? `$${budgetMin}`
+    : `$${budgetMin} - $${budgetMax}`;
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    postedAt: createdAt.toLocaleDateString('ru-RU'),
+    applicants: p.bid_count,
     paymentVerified: false,
-    description: 'Ищем видеомонтажера для создания серии коротких роликов (Reels, YouTube Shorts) из исходного материала. Нужен динамичный монтаж, субтитры, переходы и подбор музыки.',
-    tags: ['Video Editing', 'Premiere Pro'],
-    budget: '$120 - $250',
-    budgetMin: 120,
-    budgetMax: 250,
-    rating: 4.0,
-    reviews: 2,
-    isSaved: false,
-    isPromoted: false,
-    categoryId: 'photo',
-    paymentType: 'fixed',
-    deadline: 'urgent',
-    experienceLevel: 'junior',
-    isEscrowReady: false,
-    isNew: true,
-  },
-  {
-    id: '3',
-    title: 'Разработка парсера для интернет-магазина',
-    postedAt: '7 часов назад',
-    applicants: 24,
-    paymentVerified: true,
-    description: 'Нужно написать скрипт на Python для сбора цен и наличия товаров с сайта конкурента. Данные должны сохраняться в Excel или Google Sheets. Желательно использовать Scrapy.',
-    tags: ['Python', 'Parsing', 'Data Mining'],
-    budget: '$150 - $300',
-    budgetMin: 150,
-    budgetMax: 300,
-    rating: 5.0,
-    reviews: 45,
-    isSaved: true,
-    isPromoted: false,
-    categoryId: 'dev',
-    paymentType: 'fixed',
-    deadline: 'short',
-    experienceLevel: 'middle',
-    isEscrowReady: true,
-    isNew: true,
-  },
-  {
-    id: '4',
-    title: 'Настройка таргетированной рекламы Facebook/Instagram',
-    postedAt: '1 день назад',
-    applicants: 3,
-    paymentVerified: true,
-    description: 'Ищем таргетолога для запуска рекламной кампании для онлайн-школы английского языка. Нужно собрать аудиторию, подготовить креативы и оптимизировать кампанию.',
-    tags: ['Targeting', 'Facebook Ads', 'Marketing'],
-    budget: '$300 - $500',
-    budgetMin: 300,
-    budgetMax: 500,
-    rating: 4.9,
-    reviews: 18,
-    isSaved: false,
-    isPromoted: false,
-    categoryId: 'marketing',
-    paymentType: 'fixed',
-    deadline: 'long',
-    experienceLevel: 'middle',
-    isEscrowReady: true,
-    isNew: false,
-  },
-  {
-    id: '5',
-    title: 'Перевод технической документации на английский',
-    postedAt: '2 дня назад',
-    applicants: 8,
-    paymentVerified: true,
-    description: 'Требуется перевести техническое задание и документацию по API с русского на английский язык. Объем около 15 страниц. Важно знание технической терминологии.',
-    tags: ['Translation', 'English', 'Technical Writing'],
-    budget: '$15 / час',
-    budgetMin: 15,
-    budgetMax: 15,
-    rating: 4.5,
-    reviews: 8,
-    isSaved: false,
-    isPromoted: false,
-    categoryId: 'texts',
-    paymentType: 'hourly',
-    deadline: 'short',
-    experienceLevel: 'senior',
-    isEscrowReady: false,
-    isNew: false,
-  },
-  {
-    id: '6',
-    title: 'Разработка мобильного приложения React Native',
-    postedAt: '3 часа назад',
-    applicants: 15,
-    paymentVerified: true,
-    description: 'Нужно разработать MVP мобильного приложения для доставки еды. Дизайн готов в Figma. Бэкенд на Node.js уже написан. Ищем опытного разработчика.',
-    tags: ['React Native', 'Mobile App', 'TypeScript'],
-    budget: '$1500 - $3000',
-    budgetMin: 1500,
-    budgetMax: 3000,
-    rating: 5.0,
-    reviews: 32,
-    isSaved: true,
-    isPromoted: true,
-    categoryId: 'dev',
-    paymentType: 'fixed',
-    deadline: 'long',
-    experienceLevel: 'senior',
-    isEscrowReady: true,
-    isNew: true,
-  },
-  {
-    id: '7',
-    title: 'Создание 3D-модели для игры',
-    postedAt: '10 часов назад',
-    applicants: 2,
-    paymentVerified: false,
-    description: 'Требуется создать 3D-модель персонажа (low-poly) для инди-игры. Нужен риггинг и базовая анимация ходьбы/бега.',
-    tags: ['3D Modeling', 'Blender', 'Animation'],
-    budget: 'Аукцион',
-    budgetMin: 0,
-    budgetMax: 1000,
+    budget: budgetStr,
+    budgetMin,
+    budgetMax,
+    tags: [] as string[],
     rating: 0,
     reviews: 0,
     isSaved: false,
     isPromoted: false,
-    categoryId: 'design',
-    paymentType: 'auction',
-    deadline: 'long',
-    experienceLevel: 'junior',
+    categoryId: p.category_id ?? '',
+    paymentType,
+    deadline,
+    experienceLevel,
     isEscrowReady: false,
-    isNew: true,
-    isAuction: true,
-  },
-  {
-    id: '8',
-    title: 'Разработка логотипа для крипто-стартапа',
-    postedAt: '1 час назад',
-    applicants: 5,
-    paymentVerified: true,
-    description: 'Нам нужен современный, минималистичный логотип для нового DeFi проекта. Логотип должен ассоциироваться с безопасностью, скоростью и инновациями. Ожидаем 3-4 концепта на выбор.',
-    tags: ['Logo Design', 'Branding', 'Illustrator'],
-    budget: 'Аукцион',
-    budgetMin: 0,
-    budgetMax: 500,
-    rating: 4.8,
-    reviews: 12,
-    isSaved: false,
-    isPromoted: true,
-    categoryId: 'design',
-    paymentType: 'auction',
-    deadline: 'short',
-    experienceLevel: 'middle',
-    isEscrowReady: true,
-    isNew: true,
-    isAuction: true,
-  },
-  {
-    id: '9',
-    title: 'Настройка таргетированной рекламы Facebook/Insta',
-    postedAt: '5 часов назад',
-    applicants: 12,
-    paymentVerified: true,
-    description: 'Нужен специалист для настройки и ведения рекламной кампании для интернет-магазина одежды. Цель: ROAS > 300%. Бюджет на рекламу $2000/мес. Оплата за настройку и ведение обсуждается на аукционе.',
-    tags: ['Targeted Ads', 'Facebook Ads', 'Marketing'],
-    budget: 'Аукцион',
-    budgetMin: 0,
-    budgetMax: 800,
-    rating: 5.0,
-    reviews: 45,
-    isSaved: true,
-    isPromoted: false,
-    categoryId: 'marketing',
-    paymentType: 'auction',
-    deadline: 'long',
-    experienceLevel: 'senior',
-    isEscrowReady: true,
-    isNew: false,
-    isAuction: true,
-  }
-];
+    isNew,
+    isAuction: p.payment_type === 'AUCTION',
+    avgBid: p.avg_bid,
+  };
+}
 
 const CATEGORIES = [
   { id: 'dev', label: 'Разработка и IT' },
@@ -241,6 +79,29 @@ const EXPERIENCE_LEVELS = [
 ];
 
 export default function ProjectsPage() {
+  const [projects, setProjects] = useState<ReturnType<typeof mapBLProject>[]>([]);
+  const [categories, setCategories] = useState<BLCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { listProjects, listCategories } = await import('@/lib/api/bl');
+        const [blProjects, blCategories] = await Promise.all([
+          listProjects({ status: 'OPEN', limit: 50 }),
+          listCategories(),
+        ]);
+        setProjects(blProjects.map(mapBLProject));
+        setCategories(blCategories);
+      } catch (e) {
+        console.error('Failed to load projects:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -250,17 +111,15 @@ export default function ProjectsPage() {
   const [selectedDeadlines, setSelectedDeadlines] = useState<string[]>([]);
   const [selectedExperienceLevels, setSelectedExperienceLevels] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('Рекомендуемые');
-  
+
   const [quickFilters, setQuickFilters] = useState({
     verified: false,
     escrow: false,
     newToday: false,
     noCompetition: false,
   });
-  
-  const [savedProjects, setSavedProjects] = useState<string[]>(
-    MOCK_PROJECTS.filter(p => p.isSaved).map(p => p.id)
-  );
+
+  const [savedProjects, setSavedProjects] = useState<string[]>([]);
 
   const toggleSaved = (id: string) => {
     setSavedProjects(prev => 
@@ -290,7 +149,7 @@ export default function ProjectsPage() {
     setQuickFilters(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const filteredProjects = MOCK_PROJECTS.filter(project => {
+  const filteredProjects = projects.filter(project => {
     // Search Query
     if (searchQuery && !project.title.toLowerCase().includes(searchQuery.toLowerCase()) && !project.description.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -456,13 +315,13 @@ export default function ProjectsPage() {
                   Категории
                 </h3>
                 <div className="space-y-3">
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <label key={cat.id} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleCategory(cat.id)}>
                       <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedCategories.includes(cat.id) ? 'bg-primary border-primary' : 'border-slate-600 group-hover:border-slate-400'}`}>
                         {selectedCategories.includes(cat.id) && <CheckCircle2 className="w-3.5 h-3.5 text-background-dark" />}
                       </div>
                       <span className={`text-sm ${selectedCategories.includes(cat.id) ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                        {cat.label}
+                        {cat.name}
                       </span>
                     </label>
                   ))}

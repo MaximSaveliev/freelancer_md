@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Handshake, Eye, EyeOff, Upload, ChevronDown, ArrowLeft, CheckCircle2, X, Briefcase, Star, ShieldCheck } from 'lucide-react';
@@ -163,28 +163,49 @@ export default function ClientRegistration() {
     }
   };
 
-  const handleComplete = () => {
-    const payload = {
-      role: 'client',
-      credentials: {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-      },
-      profile: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        companyName: formData.companyName || 'Частный заказчик',
-        industry: formData.industry,
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }, []);
+
+  const handleComplete = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const { createUser, createProfile } = await import('@/lib/api/bl');
+      const id = crypto.randomUUID();
+      await createUser({ id, email: formData.email, role: 'CLIENT' });
+      await createProfile({
+        user_id: id,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        company_name: formData.companyName || undefined,
+        industry: formData.industry || undefined,
+      });
+      if (avatarFile) {
+        const { uploadAvatar } = await import('@/lib/api/bl');
+        await uploadAvatar(id, id, avatarFile).catch(() => {});
       }
-    };
-    
-    console.log('Client Registration Payload:', JSON.stringify(payload, null, 2));
-    localStorage.removeItem('client_registration_step');
-    
-    setTimeout(() => {
-      router.push('/');
-    }, 1000);
+      localStorage.setItem('user_id', id);
+      localStorage.setItem('user_role', 'CLIENT');
+      localStorage.setItem('user_email', formData.email);
+      localStorage.setItem('userRole', 'client');
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.removeItem('client_registration_step');
+      router.push('/client-profile');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Ошибка регистрации');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getInputClass = (isMatch: boolean, isError: boolean) => {
@@ -487,13 +508,22 @@ export default function ClientRegistration() {
                   </div>
 
                   <div className="flex items-center gap-6 mb-2">
-                    <label className="relative w-24 h-24 shrink-0 rounded-full border-2 border-dashed border-slate-600 bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group overflow-hidden">
-                      <input type="file" className="hidden" accept="image/*" />
-                      <Upload className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="relative w-24 h-24 shrink-0 rounded-full border-2 border-dashed border-slate-600 bg-slate-800/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group overflow-hidden"
+                    >
+                      {avatarPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        <Upload className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
+                      )}
+                    </button>
+                    <input ref={avatarInputRef} type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                     <div className="text-sm text-slate-400">
                       <p className="font-medium text-white mb-1">Логотип или Фото</p>
-                      <p>Качественное фото повышает доверие исполнителей</p>
+                      <p>{avatarPreview ? 'Нажмите для замены' : 'Качественное фото повышает доверие исполнителей'}</p>
                     </div>
                   </div>
 
@@ -546,19 +576,20 @@ export default function ClientRegistration() {
                     />
                   </div>
 
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
                   <button
                     onClick={handleComplete}
-                    disabled={!isStep3Valid}
+                    disabled={!isStep3Valid || isLoading}
                     className={`w-full py-3.5 rounded-xl font-bold text-base mt-8 transition-all duration-300 relative overflow-hidden group ${
-                      isStep3Valid
+                      isStep3Valid && !isLoading
                         ? 'bg-primary text-background-dark hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-[0.98]'
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                     }`}
                   >
-                    {isStep3Valid && (
+                    {isStep3Valid && !isLoading && (
                       <div className="absolute inset-0 bg-white/20 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12" />
                     )}
-                    Завершить регистрацию
+                    {isLoading ? 'Регистрация...' : 'Завершить регистрацию'}
                   </button>
                 </motion.div>
               )}

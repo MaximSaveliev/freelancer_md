@@ -1,8 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Gavel, BadgeCheck, Lock, MessageSquare } from 'lucide-react';
-import Image from 'next/image';
+import { Gavel, BadgeCheck, Lock, MessageSquare, TrendingUp } from 'lucide-react';
 
 export function Features() {
   const features = [
@@ -61,25 +60,21 @@ export function Features() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative h-96 rounded-2xl overflow-hidden shadow-2xl border border-slate-border group"
+            className="relative h-96 rounded-2xl overflow-hidden shadow-2xl border border-slate-border bg-slate-card/50 flex flex-col items-center justify-center gap-6 p-8"
           >
-            <Image 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgMy7EqYG5jf1gxa68VMgU1dv6yFyXD7bo_2YfKQaOTvg01k8Aaphdip1QvZklL40Z2wNMUGFls61ljpLcw4UsD0DRmax_Xgepksn9Gw8kRbXqCXP6V_fvMdceDpUSmAgbVWU6m2sjXkgvb7jBJzkgpb7QcEsHO2VW4psURkBTFJWfkpTm1ekfKmC0tAPBO5Eg4doA7RP_PQfKuzPwS5NywsYEktqRVjErkuPuoScqK60D1AuHBqu41OBNJYwij9pLehJCpsmnkw" 
-              alt="Team working on dashboard" 
-              fill
-              className="object-cover transform transition duration-700 group-hover:scale-105"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-80"></div>
-            
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="bg-slate-card/80 backdrop-blur-md p-4 rounded-xl border border-slate-border/50">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <p className="text-xs text-slate-300 font-mono">LIVE UPDATE</p>
-                </div>
-                <p className="text-white font-semibold">Новая сделка успешно закрыта: <span className="text-primary">$2,400</span></p>
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <TrendingUp className="w-10 h-10 text-primary" />
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-black text-white mb-1">$2,400</p>
+              <p className="text-slate-400 text-sm">средний чек закрытой сделки</p>
+            </div>
+            <div className="w-full bg-slate-card/80 backdrop-blur-md p-4 rounded-xl border border-slate-border/50">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <p className="text-xs text-slate-300 font-mono">LIVE UPDATE</p>
               </div>
+              <p className="text-white font-semibold">Новая сделка успешно закрыта: <span className="text-primary">$2,400</span></p>
             </div>
           </motion.div>
         </div>

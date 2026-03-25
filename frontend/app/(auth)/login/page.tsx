@@ -18,26 +18,44 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!formData.email || !formData.password) {
       setError('Пожалуйста, заполните все поля');
       return;
     }
 
     setIsLoading(true);
-    
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { getUserByEmail } = await import('@/lib/api/bl');
+      const user = await getUserByEmail(formData.email);
+
+      const expectedRole = role === 'client' ? 'CLIENT' : 'FREELANCER';
+      if (user.role !== expectedRole) {
+        setError(
+          user.role === 'CLIENT'
+            ? 'Этот аккаунт зарегистрирован как заказчик. Выберите «Заказчик».'
+            : 'Этот аккаунт зарегистрирован как фрилансер. Выберите «Фрилансер».'
+        );
+        return;
+      }
+
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userRole', role);
-      // Redirect based on role
-      if (role === 'freelancer') {
-        router.push('/profile');
+      localStorage.setItem('user_role', user.role);
+      localStorage.setItem('user_id', user.id);
+      localStorage.setItem('user_email', user.email);
+
+      router.push(role === 'freelancer' ? '/profile' : '/client-profile');
+    } catch (err: unknown) {
+      const status = (err as { status?: number }).status;
+      if (status === 404) {
+        setError('Пользователь с таким email не найден.');
       } else {
-        router.push('/client-profile');
+        setError('Ошибка входа. Проверьте данные и попробуйте снова.');
       }
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
