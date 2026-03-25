@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Clock, MessageSquare, CheckCircle2, ShieldCheck, FileText, ExternalLink, AlertCircle, Info, Wallet } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-type Tab = 'active' | 'bids' | 'completed' | 'offers';
+import { useRouter } from 'next/navigation';
+import { createOrGetConversation } from '@/lib/conversations';
 
 const MOCK_ACTIVE_ORDERS = [
   {
@@ -97,11 +97,16 @@ const MOCK_OFFERS = [
   }
 ];
 
+// Add Tab type
+type Tab = 'active' | 'bids' | 'completed' | 'offers';
+
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<Tab>('active');
   const [now, setNow] = useState(new Date());
 
   // Update timer every minute
+  const router = useRouter();
+
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
@@ -130,27 +135,36 @@ export default function OrdersPage() {
   const totalEarned = MOCK_COMPLETED.reduce((sum, order) => sum + order.price, 0);
   const availableToWithdraw = 450; // Mock value for available funds
 
+  // Handler to open/create conversation and navigate to messages
+  const handleWriteToClient = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+
+    // Mock per requirement
+    const user2Id = 18;
+
+    try {
+      // Ensure conversation exists (and validate auth) before going to messages.
+      await createOrGetConversation(user2Id);
+    } catch (err) {
+      // Even if backend call fails (e.g. not logged in), still navigate to show the flow.
+      console.warn('[Conversation] create-or-get failed, navigating anyway:', err);
+    }
+
+    router.push(`/messages?user2id=${user2Id}`);
+  };
+
   return (
     <div className="min-h-[calc(100vh-80px)] bg-background-dark py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Мои заказы</h1>
-          <p className="text-slate-400">Управляйте текущими контрактами, откликами и историей работ.</p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* Main Content Area */}
-          <div className="flex-1">
-            
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+          <div className="space-y-8">
             {/* Tabs */}
-            <div className="flex overflow-x-auto hide-scrollbar border-b border-slate-border mb-6">
+            <div className="flex gap-4">
               <button
                 onClick={() => setActiveTab('active')}
                 className={`px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === 'active' 
-                    ? 'border-primary text-primary' 
+                  activeTab === 'active'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -261,14 +275,14 @@ export default function OrdersPage() {
                             </div>
                             
                             <div className="flex items-center gap-3 w-full sm:w-auto">
-                              <Link 
-                                href="/messages" 
+                              <button
+                                onClick={(e) => handleWriteToClient(e)}
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-xl hover:bg-slate-700 transition-colors"
                               >
                                 <MessageSquare className="w-4 h-4" />
                                 Написать заказчику
-                              </Link>
-                              <Link 
+                              </button>
+                              <Link
                                 href={`/workspace/${order.id}`}
                                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-xl hover:bg-primary/20 transition-colors"
                               >

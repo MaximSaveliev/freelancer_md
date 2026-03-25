@@ -5,3 +5,90 @@ CLAUDE.md
 __pycache__/
 **/__pycache__/
 *.pyc
+
+# .NET / Visual Studio / Rider
+# ------------------------------------------------------------
+
+# Build results
+**/bin/
+**/obj/
+**/[Dd]ebug/
+**/[Rr]elease/
+**/[Xx]64/
+**/[Xx]86/
+**/[Aa][Rr][Mm]/
+**/[Aa][Rr][Mm]64/
+
+# Test results
+**/[Tt]est[Rr]esults/
+
+# Publish / artifacts
+**/publish/
+artifacts/
+
+# ASP.NET Core / EF / general logs
+*.log
+
+# Visual Studio
+.vs/
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.cache
+*.ilk
+*.pdb
+*.aps
+*.ncb
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# MSBuild / NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+# packages/ is used by legacy projects; modern SDK-style uses global-packages
+packages/
+# lock files may be committed if you use restore locking; ignore by default
+packages.lock.json
+project.lock.json
+
+# dotnet tools / local state
+.dotnet/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+*.iws
+*.ipr
+*.DotSettings.user
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# OS junk
+[Dd]esktop.ini
+Thumbs.db
+Thumbs.db:encryptable
+
+# Local environment / secrets
+.env
+.env.*
+*.secrets.json
+
+# ASP.NET Core appsettings
+# Keep appsettings.json committed, but ignore local dev overrides.
+appsettings.Development.json
+
+# Node / frontend (you have TypeScript DTOs)
+node_modules/
+
+# Keep these tracked explicitly (defensive; nothing above should ignore them)
+!docs/
+!docs/**
+!dto/
+!dto/**
