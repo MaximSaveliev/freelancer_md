@@ -23,6 +23,14 @@ def test_list_projects_premium_includes_avg_bid(client: TestClient):
     assert resp.json()[0]["avg_bid"] == 450
 
 
+def test_list_projects_filter_by_user_id(client: TestClient):
+    db = make_db([MOCK_PROJECT_ROW])
+    with patch("routers.projects.get_supabase", return_value=db):
+        resp = client.get(f"/projects?user_id={CLIENT_ID}")
+    assert resp.status_code == 200
+    assert resp.json()[0]["user_id"] == CLIENT_ID
+
+
 def test_list_projects_filter_by_status(client: TestClient):
     db = make_db([MOCK_PROJECT_ROW])
     with patch("routers.projects.get_supabase", return_value=db):

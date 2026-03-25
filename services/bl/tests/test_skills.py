@@ -12,6 +12,12 @@ MOCK_PROFILE_SKILL_ROW = {
     "updated_at": "2026-03-25T00:00:00+00:00",
 }
 
+# Row as returned by Supabase join (includes nested skills object)
+MOCK_PROFILE_SKILL_ROW_JOINED = {
+    **MOCK_PROFILE_SKILL_ROW,
+    "skills": {"name": "Python"},
+}
+
 
 def test_list_skills(client: TestClient):
     db = make_db([MOCK_SKILL_ROW])
@@ -64,11 +70,12 @@ def test_get_skill_not_found(client: TestClient):
 
 
 def test_list_profile_skills(client: TestClient):
-    db = make_db([MOCK_PROFILE_SKILL_ROW])
+    db = make_db([MOCK_PROFILE_SKILL_ROW_JOINED])
     with patch("routers.skills.get_supabase", return_value=db):
         resp = client.get(f"/skills/profile/{FREELANCER_ID}")
     assert resp.status_code == 200
     assert resp.json()[0]["skill_id"] == SKILL_ID
+    assert resp.json()[0]["skill_name"] == "Python"
 
 
 def test_add_profile_skill_success(client: TestClient):

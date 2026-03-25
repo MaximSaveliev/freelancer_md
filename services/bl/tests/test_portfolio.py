@@ -14,6 +14,21 @@ from tests.helpers import (
 OTHER_USER = "00000000-0000-0000-0000-000000000099"
 
 
+def test_get_portfolio_item_success(client: TestClient):
+    db = make_db([MOCK_PORTFOLIO_ITEM_ROW])
+    with patch("routers.portfolio.get_supabase", return_value=db):
+        resp = client.get(f"/portfolio/item/{PORTFOLIO_ITEM_ID}")
+    assert resp.status_code == 200
+    assert resp.json()["id"] == PORTFOLIO_ITEM_ID
+
+
+def test_get_portfolio_item_not_found(client: TestClient):
+    db = make_db([])
+    with patch("routers.portfolio.get_supabase", return_value=db):
+        resp = client.get(f"/portfolio/item/{PORTFOLIO_ITEM_ID}")
+    assert resp.status_code == 404
+
+
 def test_list_portfolio_items(client: TestClient):
     db = make_db([MOCK_PORTFOLIO_ITEM_ROW])
     with patch("routers.portfolio.get_supabase", return_value=db):
