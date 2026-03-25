@@ -12,12 +12,10 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<User> Users { get; set; }
 
-    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Change to env
-        if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=auth_db;Username=auth_admin;Password=auth_admin");
+        // No hardcoded connection string here.
+        // Config is provided via DI in api_gateway/Program.cs (reads ConnectionStrings__DefaultConnection from .env).
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text;
-using api_gateway.Settings;
+using messenger.Settings;
 
 namespace messenger.Services;
 

@@ -15,9 +15,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
 
   # ─── Backend Services ──────────────────────────────────────────────────────
-
+  api_gateway:
+    build: ./services/api_gateway
+    container_name: api_gateway
+    ports:
+      - "8088:8088"
+    env_file:
+      - ./services/api_gateway/.env
+    depends_on:
+      - postgres
+  
   bl:
     build: ./services/bl
     container_name: freelancer_bl
@@ -30,6 +51,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      
+  messenger:
+    build: ./services/messenger
+    container_name: messenger
+    ports:
+      - "8089:8088"
+    env_file:
+      - ./services/messenger/.env
+    depends_on:
+      - postgres
 
   payment:
     build: ./services/payment
@@ -74,3 +105,4 @@ services:
 
 volumes:
   rabbitmq_data:
+  postgres_data:

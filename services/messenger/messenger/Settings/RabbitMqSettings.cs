@@ -1,4 +1,4 @@
-namespace api_gateway.Settings;
+namespace messenger.Settings;
 
 public class RabbitMqSettings
 {

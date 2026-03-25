@@ -1,4 +1,4 @@
-using api_gateway.Settings;
+using messenger.Settings;
 using BLL.Services;
 using DAL;
 using DAL.Interfaces;
@@ -6,19 +6,12 @@ using DAL.Repositories;
 using messenger.Hubs;
 using messenger.Middlewares;
 using messenger.Services;
-using messenger.Settings;
 using Microsoft.EntityFrameworkCore;
-using dotenv.net;
-
-// Load variables from .env in the app folder (dev convenience)
-DotEnv.Fluent()
-    .WithEnvFiles(".env")
-    .WithTrimValues()
-    .Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Make sure environment variables (including ones loaded from .env) are part of the configuration.
+// Load variables from .env in the app folder (dev convenience)
+DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
@@ -42,10 +35,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IUserConnectionStore, InMemoryUserConnectionStore>();
 
 builder.Services.AddDbContext<MessengerDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("MessengerDb");
-    options.UseNpgsql(connectionString);
-});
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
 
@@ -85,6 +76,12 @@ app.UseWhen(
 app.MapControllers();
 
 app.MapHub<ChatHub>("/hubs/chat");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MessengerDbContext>();
+    db.Database.Migrate();
+}
 
 app.Run();
 
