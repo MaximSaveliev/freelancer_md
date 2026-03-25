@@ -27,6 +27,26 @@ jobs:
           cd services/payment
           pytest tests/ -v
 
+  test-bl:
+    name: BL Service Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          cd services/bl
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/bl
+          pytest tests/ -v
+
   test-notification:
     name: Notification Service Tests
     runs-on: ubuntu-latest

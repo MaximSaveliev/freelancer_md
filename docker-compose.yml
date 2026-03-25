@@ -22,6 +22,14 @@ services:
 
   # ─── Backend Services ──────────────────────────────────────────────────────
 
+  bl:
+    build: ./services/bl
+    container_name: freelancer_bl
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file: ./services/bl/.env
+
   payment:
     build: ./services/payment
     container_name: freelancer_payment
