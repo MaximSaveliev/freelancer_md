@@ -54,10 +54,10 @@ async def create_subscription_checkout(body: SubscriptionCheckoutRequest):
             line_items=[{"price": price_id, "quantity": 1}],
             mode="subscription",
             success_url=(
-                f"{config.BASE_URL}/dashboard/subscription/success"
+                f"{config.BASE_URL}/subscription/success"
                 "?session_id={CHECKOUT_SESSION_ID}"
             ),
-            cancel_url=f"{config.BASE_URL}/dashboard/subscription/cancel",
+            cancel_url=f"{config.BASE_URL}/subscription/cancel",
             allow_promotion_codes=True,
             subscription_data={
                 "description": PLAN_LABELS[body.plan],
