@@ -30,6 +30,13 @@ def _update_project_bid_stats(db, project_id: str) -> None:
     db.table("projects").update({"bid_count": count, "avg_bid": avg}).eq("id", project_id).execute()
 
 
+@router.get("/bids", response_model=list[BidResponse])
+async def list_user_bids(user_id: str = Query(...)):
+    db = get_supabase()
+    rows = db.table("bids").select("*").eq("user_id", user_id).order("created_at", desc=True).execute().data
+    return rows
+
+
 @router.get("/projects/{project_id}/bids", response_model=list[BidResponse])
 async def list_bids(project_id: str):
     db = get_supabase()

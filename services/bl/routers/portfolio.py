@@ -27,6 +27,12 @@ def _assert_owner(item: dict, user_id: str) -> None:
         raise HTTPException(status_code=403, detail="Not authorized")
 
 
+@router.get("/item/{item_id}", response_model=PortfolioItemResponse)
+async def get_portfolio_item(item_id: str):
+    db = get_supabase()
+    return _get_item(db, item_id)
+
+
 @router.get("/{user_id}", response_model=list[PortfolioItemResponse])
 async def list_portfolio_items(user_id: str):
     db = get_supabase()

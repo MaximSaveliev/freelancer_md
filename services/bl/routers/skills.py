@@ -45,7 +45,11 @@ async def create_skill(body: SkillCreateRequest):
 @router.get("/profile/{user_id}", response_model=list[ProfileSkillResponse])
 async def list_profile_skills(user_id: str):
     db = get_supabase()
-    rows = db.table("profile_skills").select("*").eq("user_id", user_id).execute().data
+    rows = db.table("profile_skills").select("*, skills(name)").eq("user_id", user_id).execute().data
+    # Flatten nested skills.name → skill_name
+    for row in rows:
+        nested = row.pop("skills", None)
+        row["skill_name"] = nested["name"] if isinstance(nested, dict) else None
     return rows
 
 

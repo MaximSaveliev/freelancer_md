@@ -36,6 +36,7 @@ def _strip_avg_bid(project: dict, user_plan: str) -> dict:
 @router.get("", response_model=list[ProjectResponse])
 async def list_projects(
     user_plan: str = Query("basic"),
+    user_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     category_id: Optional[str] = Query(None),
     payment_type: Optional[str] = Query(None),
@@ -46,6 +47,8 @@ async def list_projects(
 ):
     db = get_supabase()
     query = db.table("projects").select("*")
+    if user_id:
+        query = query.eq("user_id", user_id)
     if status:
         query = query.eq("status", status)
     if category_id:

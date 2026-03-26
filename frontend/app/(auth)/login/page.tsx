@@ -26,24 +26,34 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-
     try {
-      const res = await login({ email: formData.email, password: formData.password });
-      if (!res.ok) {
-        setError(res.error);
+      const { getUserByEmail } = await import('@/lib/api/bl');
+      const user = await getUserByEmail(formData.email);
+
+      const expectedRole = role === 'client' ? 'CLIENT' : 'FREELANCER';
+      if (user.role !== expectedRole) {
+        setError(
+          user.role === 'CLIENT'
+            ? 'Этот аккаунт зарегистрирован как заказчик. Выберите «Заказчик».'
+            : 'Этот аккаунт зарегистрирован как фрилансер. Выберите «Фрилансер».'
+        );
         return;
       }
 
-      // Tokens are set by the backend in cookies. We don't store them client-side.
-      // Redirect based on role (until we have a /me endpoint)
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('user_role', user.role);
+      localStorage.setItem('user_id', user.id);
+      localStorage.setItem('user_email', user.email);
 
-      if (role === 'freelancer') {
-        router.push('/profile');
+      router.push(role === 'freelancer' ? '/profile' : '/client-profile');
+    } catch (err: unknown) {
+      const status = (err as { status?: number }).status;
+      if (status === 404) {
+        setError('Пользователь с таким email не найден.');
       } else {
-        router.push('/client-profile');
+        setError('Ошибка входа. Проверьте данные и попробуйте снова.');
       }
-    } catch {
-      setError('Не удалось подключиться к серверу');
     } finally {
       setIsLoading(false);
     }

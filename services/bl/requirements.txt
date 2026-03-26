@@ -1,3 +1,5 @@
+aio-pika==9.6.2
+aiormq==6.9.4
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
@@ -23,6 +25,7 @@ mdurl==0.1.2
 mmh3==5.2.1
 multidict==6.7.1
 packaging==26.0
+pamqp==3.3.0
 pluggy==1.6.0
 postgrest==2.28.3
 propcache==0.4.1
