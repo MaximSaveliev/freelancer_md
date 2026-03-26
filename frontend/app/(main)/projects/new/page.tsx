@@ -5,10 +5,16 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, DollarSign, Clock, Zap, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { listCategories, createProject } from '@/lib/api/bl';
-import type { Category } from '@/lib/types';
+import type { Category, ProficiencyLevel } from '@/lib/types';
 
 type PaymentType = 'FIXED' | 'HOURLY' | 'AUCTION';
 type Grade = 'JUNIOR' | 'MIDDLE' | 'SENIOR' | 'EXPERT';
+
+function toProficiencyLevel(grade: Grade | ''): ProficiencyLevel | undefined {
+  if (!grade) return undefined;
+  if (grade === 'EXPERT') return 'SENIOR';
+  return grade;
+}
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -63,7 +69,7 @@ export default function NewProjectPage() {
         payment_type: form.paymentType,
         budget,
         category_id: form.categoryId || undefined,
-        required_grade: (form.requiredGrade as Grade) || undefined,
+        required_grade: toProficiencyLevel(form.requiredGrade),
         is_urgent: form.isUrgent,
       });
       router.push('/client-profile');

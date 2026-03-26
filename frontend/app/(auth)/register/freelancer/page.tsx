@@ -164,6 +164,8 @@ export default function FreelancerRegistration() {
     }
   };
 
+  const resendCode = async (): Promise<void> => {};
+
   const tryConfirmOtp = async (explicitOtp?: string) => {
     const code = explicitOtp ?? otp.join('');
     if (!/^\d{6}$/.test(code)) return;
