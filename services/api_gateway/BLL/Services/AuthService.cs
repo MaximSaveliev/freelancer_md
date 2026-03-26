@@ -25,7 +25,7 @@ public class AuthService : IAuthContracts
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _tokenService = tokenService;
-        _emailSender = emailSender;
+        _emailSender = emailSender; // kept for DI; email is sent via resend-email-confirmation
     }
 
     public async Task<TokensDTO> Login(LoginUserDTO loginUserDto)
@@ -90,22 +90,15 @@ public class AuthService : IAuthContracts
         {
             var createdUser = await _userRepository.Create(newUser);
 
-            // Create confirmation code (6 digits)
+            // Pre-generate the confirmation token so resend-email-confirmation can send it immediately.
             var token = Random.Shared.Next(0, 1_000_000).ToString("D6");
-
             createdUser.EmailConfirmationToken = token;
             createdUser.EmailConfirmationTokenExpiresAt = DateTime.UtcNow.AddHours(24);
             createdUser.EmailConfirmed = false;
 
             await _userRepository.Update(createdUser);
 
-            // Send email (console sink by default)
-            await _emailSender.SendEmailAsync(
-                createdUser.Email,
-                "Confirm your email",
-                $"<p>Your confirmation code is:</p><h2 style=\"letter-spacing:2px\">{token}</h2><p>This code expires in 24 hours.</p>"
-            );
-
+            // Email is sent by the frontend via POST /resend-email-confirmation (called right after this).
             return new UserViewDTO
             {
                 Id = createdUser.Id,

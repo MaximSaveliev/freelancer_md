@@ -46,7 +46,8 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<EmailConfirmationService>();
 
-// RabbitMQ
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
@@ -60,6 +61,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseTokenValidation();
 app.MapControllers();
+app.MapReverseProxy();
 
 using (var scope = app.Services.CreateScope())
 {

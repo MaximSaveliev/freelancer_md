@@ -166,7 +166,22 @@ export default function ClientRegistration() {
     }
   };
 
-  const resendCode = async (): Promise<void> => {};
+  const resendCode = async (): Promise<void> => {
+    setIsResending(true);
+    setServerError(null);
+    setInfoMessage(null);
+    try {
+      const res = await resendEmailConfirmation({ email: formData.email });
+      if (!res.ok) {
+        setServerError(res.error);
+      } else {
+        setInfoMessage('Код подтверждения повторно отправлен на email.');
+        setTimer(60);
+      }
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const tryConfirmOtp = async (explicitOtp?: string) => {
     const code = explicitOtp ?? otp.join('');
