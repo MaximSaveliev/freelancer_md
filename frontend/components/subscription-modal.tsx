@@ -18,14 +18,8 @@ export default function SubscriptionModal({ isOpen, onClose, currentPlan, onUpgr
   const handleUpgrade = (plan: 'pro' | 'premium') => {
     setSelectedPlan(plan);
     setIsProcessing(true);
-    
-    // Simulate API call for payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      onUpgrade(plan);
-      onClose();
-      setSelectedPlan(null);
-    }, 1500);
+    onUpgrade(plan);
+    // onUpgrade will redirect to Stripe Checkout, so no need to reset state
   };
 
   return (
