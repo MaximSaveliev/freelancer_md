@@ -23,9 +23,6 @@ interface BidWithProject extends Bid {
   project: Project | null;
 }
 
-// Add Tab type
-type Tab = 'active' | 'bids' | 'completed' | 'offers';
-
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<Tab>('active');
   const [now, setNow] = useState(new Date());
@@ -78,24 +75,6 @@ export default function OrdersPage() {
       </div>
     );
   }
-
-  // Handler to open/create conversation and navigate to messages
-  const handleWriteToClient = async (e?: React.MouseEvent) => {
-    e?.preventDefault();
-
-    // Mock per requirement
-    const user2Id = 18;
-
-    try {
-      // Ensure conversation exists (and validate auth) before going to messages.
-      await createOrGetConversation(user2Id);
-    } catch (err) {
-      // Even if backend call fails (e.g. not logged in), still navigate to show the flow.
-      console.warn('[Conversation] create-or-get failed, navigating anyway:', err);
-    }
-
-    router.push(`/messages?user2id=${user2Id}`);
-  };
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-background-dark py-8 px-4 sm:px-6 lg:px-8">
