@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { Handshake, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { login } from '@/lib/auth';
+import { login as authLogin } from '@/lib/auth';
 
 type Role = 'client' | 'freelancer';
 
@@ -27,6 +27,14 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
+      // Step 1: authenticate and obtain JWT tokens
+      const authResult = await authLogin({ email: formData.email, password: formData.password });
+      if (!authResult.ok) {
+        setError(authResult.error ?? 'Неверный email или пароль.');
+        return;
+      }
+
+      // Step 2: fetch BL user to get id and verify role
       const { getUserByEmail } = await import('@/lib/api/bl');
       const user = await getUserByEmail(formData.email);
 

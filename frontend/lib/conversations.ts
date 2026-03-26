@@ -1,6 +1,5 @@
 'use client';
 
-import { MESSENGER_HOST } from '@/lib/env';
 import { authFetch } from '@/lib/auth-fetch';
 import { getCookie, decodeCookieValue } from '@/lib/cookie';
 import { decodeJwtPayload } from '@/lib/jwt';
@@ -40,7 +39,7 @@ export type ConversationMessageDto = {
 
 function conversationUrl(path: string): string {
   const cleaned = path.startsWith('/') ? path : `/${path}`;
-  return `${MESSENGER_HOST}/api/Conversation${cleaned}`;
+  return `/api/messenger/api/Conversation${cleaned}`;
 }
 
 const ACCESS_COOKIE = 'accessToken';
@@ -157,29 +156,17 @@ function normalizeConversation(item: any, currentUserId: number | null): Convers
  */
 export async function listConversations(): Promise<ConversationDto[]> {
   const url = conversationUrl('/');
-  console.info('[Conversation] GET', url);
-
-  const res = await authFetch(url, {
-    method: 'GET',
-  });
-
-  console.info('[Conversation] GET status', res.status, res.statusText);
+  const res = await authFetch(url, { method: 'GET' });
 
   const raw = await res.text().catch(() => '');
-  console.info('[Conversation] GET raw body', raw);
-
   if (!res.ok) {
     throw new Error(`listConversations failed: ${res.status} ${res.statusText}${raw ? ` - ${raw}` : ''}`);
   }
 
   try {
     const json = JSON.parse(raw) as any[];
-    console.info('[Conversation] GET parsed (raw)', json);
-
     const currentUserId = getCurrentUserIdFromAccessToken();
-    const normalized = (json ?? []).map(item => normalizeConversation(item, currentUserId));
-    console.info('[Conversation] GET normalized', normalized);
-    return normalized;
+    return (json ?? []).map(item => normalizeConversation(item, currentUserId));
   } catch (e) {
     throw new Error(`listConversations: failed to parse JSON (${String(e)}). Raw: ${raw}`);
   }
@@ -206,22 +193,15 @@ export async function createOrGetConversation(user2Id: number): Promise<Conversa
  */
 export async function getConversationMessages(conversationId: number): Promise<ConversationMessageDto[]> {
   const url = conversationUrl(`/${encodeURIComponent(conversationId)}/messages`);
-  console.info('[Conversation] GET', url);
-
   const res = await authFetch(url, { method: 'GET' });
-  console.info('[Conversation] GET messages status', res.status, res.statusText);
 
   const raw = await res.text().catch(() => '');
-  console.info('[Conversation] GET messages raw body', raw);
-
   if (!res.ok) {
     throw new Error(`getConversationMessages failed: ${res.status} ${res.statusText}${raw ? ` - ${raw}` : ''}`);
   }
 
   try {
-    const json = JSON.parse(raw) as ConversationMessageDto[];
-    console.info('[Conversation] GET messages parsed', json);
-    return json;
+    return JSON.parse(raw) as ConversationMessageDto[];
   } catch (e) {
     throw new Error(`getConversationMessages: failed to parse JSON (${String(e)}). Raw: ${raw}`);
   }

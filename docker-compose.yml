@@ -27,17 +27,24 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # ─── Backend Services ──────────────────────────────────────────────────────
   api_gateway:
     build: ./services/api_gateway
     container_name: api_gateway
+    restart: unless-stopped
     ports:
       - "8088:8088"
     env_file:
       - ./services/api_gateway/.env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
   
   bl:
     build: ./services/bl
@@ -47,7 +54,7 @@ services:
       - "8001:8001"
     env_file: ./services/bl/.env
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,12 +62,14 @@ services:
   messenger:
     build: ./services/messenger
     container_name: messenger
+    restart: unless-stopped
     ports:
       - "8089:8088"
     env_file:
       - ./services/messenger/.env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   payment:
     build: ./services/payment
@@ -73,7 +82,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -89,7 +98,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -102,6 +111,11 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      # Server-side proxy routes forward to api-gateway via this URL
+      BACKEND_HOST: http://api_gateway:8088
+      # WebSocket (SignalR) connects directly from the browser to the messenger's exposed port
+      NEXT_PUBLIC_MESSENGER_HOST: http://localhost:8089
 
 volumes:
   rabbitmq_data:

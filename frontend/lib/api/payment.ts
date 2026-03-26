@@ -5,7 +5,7 @@ import type {
   SubscriptionCheckoutRequest,
 } from '../types';
 
-const PAY = process.env.NEXT_PUBLIC_PAYMENT_URL!;
+const PAY = '/api/pay';
 
 export const getSubscription = (userId: string) =>
   apiFetch<SubscriptionResponse>(PAY, `/subscriptions/me?user_id=${userId}`);

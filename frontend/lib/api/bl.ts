@@ -7,7 +7,7 @@ import type {
   ProjectStatus, PaymentType, ProficiencyLevel,
 } from '../types';
 
-const BL = process.env.NEXT_PUBLIC_BL_URL!;
+const BL = '/api/bl';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 

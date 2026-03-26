@@ -1,11 +1,12 @@
 /**
  * Environment helpers.
  *
- * NEXT_PUBLIC_* values are exposed to the browser.
+ * BACKEND_HOST is server-side only (used in Next.js Route Handlers).
+ * NEXT_PUBLIC_MESSENGER_HOST is exposed to the browser for WebSocket connections.
  */
 
-const DEFAULT_BACKEND_HOST = 'https://localhost:44374';
-const DEFAULT_MESSENGER_HOST = 'http://localhost:5273';
+const DEFAULT_BACKEND_HOST = 'http://localhost:8088';
+const DEFAULT_MESSENGER_HOST = 'http://localhost:8089';
 
 function normalizeOrigin(value: string): string {
   const trimmed = value.trim().replace(/\/+$/, ''); // remove trailing slash
@@ -15,13 +16,13 @@ function normalizeOrigin(value: string): string {
     url = new URL(trimmed);
   } catch {
     throw new Error(
-      `Invalid NEXT_PUBLIC_BACKEND_HOST: "${value}". Expected a full URL like "https://localhost:44374".`,
+      `Invalid BACKEND_HOST: "${value}". Expected a full URL like "http://localhost:8088".`,
     );
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error(
-      `Invalid NEXT_PUBLIC_BACKEND_HOST protocol: "${url.protocol}". Use http or https.`,
+      `Invalid BACKEND_HOST protocol: "${url.protocol}". Use http or https.`,
     );
   }
 
@@ -30,20 +31,18 @@ function normalizeOrigin(value: string): string {
 }
 
 /**
- * Backend host (origin) used by the browser to call the API.
- *
- * In dev, defaults to https://localhost:44374.
+ * api-gateway origin, used server-side by Next.js Route Handler proxies.
+ * Set BACKEND_HOST env var to override (e.g. http://api_gateway:8088 in Docker).
  */
 export const BACKEND_HOST: string = (() => {
-  const raw = process.env.NEXT_PUBLIC_BACKEND_HOST;
+  const raw = process.env.BACKEND_HOST ?? process.env.NEXT_PUBLIC_BACKEND_HOST;
   if (!raw) return DEFAULT_BACKEND_HOST;
   return normalizeOrigin(raw);
 })();
 
 /**
- * Messenger host (origin) used for messenger service APIs (SignalR + Conversation controller).
- *
- * In dev, defaults to http://localhost:5273.
+ * Messenger service origin, used by the browser for WebSocket (SignalR) connections.
+ * Set NEXT_PUBLIC_MESSENGER_HOST to override.
  */
 export const MESSENGER_HOST: string = (() => {
   const raw = process.env.NEXT_PUBLIC_MESSENGER_HOST;
